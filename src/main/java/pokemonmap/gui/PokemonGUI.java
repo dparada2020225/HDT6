@@ -7,7 +7,6 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 
 import pokemonmap.data.Pokemon;
 import pokemonmap.data.PokemonCollection;
@@ -17,12 +16,10 @@ import pokemonmap.util.CSVReader;
 
 public class PokemonGUI extends JFrame {
     // Constantes para colores
-    private static final Color BACKGROUND_COLOR = new Color(240, 240, 245);
-    private static final Color HEADER_COLOR = new Color(49, 92, 168); // Azul Pokémon
-    private static final Color ACCENT_COLOR = new Color(254, 203, 0);  // Amarillo Pokémon
-    private static final Color BUTTON_COLOR = new Color(65, 105, 225); // Azul real
-    private static final Color BUTTON_TEXT_COLOR = Color.WHITE;
-    private static final Color TEXT_COLOR = new Color(50, 50, 50);
+    private static final Color HEADER_COLOR = new Color(43, 87, 151); // Azul más oscuro para el header
+    private static final Color BACKGROUND_COLOR = new Color(240, 242, 245); // Gris claro para el fondo
+    private static final Color BUTTON_BORDER_COLOR = new Color(33, 77, 141); // Azul más oscuro para bordes
+    private static final Color OUTPUT_BORDER_COLOR = new Color(255, 211, 0); // Amarillo para el borde del output
 
     // Componentes de la interfaz
     private PokemonData pokemonData;
@@ -36,6 +33,7 @@ public class PokemonGUI extends JFrame {
     private JButton showUserCollectionButton;
     private JButton showAllPokemonsButton;
     private JButton findByAbilityButton;
+    private JButton showAllAvailablePokemonsButton; // Nuevo botón para mostrar todos los disponibles
     private JLabel statusLabel;
     private JPanel headerPanel;
     
@@ -48,55 +46,42 @@ public class PokemonGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(900, 700);
         setLocationRelativeTo(null);
-        setBackground(BACKGROUND_COLOR);
         
         try {
-            // Establecer Look and Feel del sistema
+            // Establecer Look and Feel del sistema para que se vea más nativo
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            // Personalizar componentes UI
-            customizeUIComponents();
         } catch (Exception e) {
             System.err.println("Error al establecer Look and Feel: " + e.getMessage());
         }
 
-        // Configurar icono de la aplicación si está disponible
-        try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            ImageIcon icon = new ImageIcon(Objects.requireNonNull(classLoader.getResource("pokeball.png")));
-            setIconImage(icon.getImage());
-        } catch (Exception e) {
-            System.err.println("No se pudo cargar el icono: " + e.getMessage());
-        }
-
-        // Panel principal con un BorderLayout
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        // Panel principal con BorderLayout
+        JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(BACKGROUND_COLOR);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Panel de cabecera con logo
-        setupHeaderPanel();
+        // Panel de cabecera con título
+        headerPanel = createHeaderPanel();
         mainPanel.add(headerPanel, BorderLayout.NORTH);
 
-        // Panel central que contiene los controles y botones
-        JPanel centerPanel = new JPanel(new BorderLayout(10, 10));
+        // Panel central que contiene los controles, botones y área de texto
+        JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.setBackground(BACKGROUND_COLOR);
-
+        
         // Panel de controles
         JPanel controlPanel = createControlPanel();
         centerPanel.add(controlPanel, BorderLayout.NORTH);
-
+        
         // Panel de botones
         JPanel buttonPanel = createButtonPanel();
         centerPanel.add(buttonPanel, BorderLayout.CENTER);
-
-        // Área de texto para la salida con scroll
+        
+        // Panel de resultado con área de texto
         JPanel outputPanel = createOutputPanel();
         centerPanel.add(outputPanel, BorderLayout.SOUTH);
 
-        // Panel de estado
+        // Panel de estado (pie de página)
         JPanel statusPanel = createStatusPanel();
         
-        // Agregar todo al panel principal
+        // Agregar paneles al panel principal
         mainPanel.add(centerPanel, BorderLayout.CENTER);
         mainPanel.add(statusPanel, BorderLayout.SOUTH);
         
@@ -107,66 +92,45 @@ public class PokemonGUI extends JFrame {
         setupEventHandlers();
     }
     
-    private void customizeUIComponents() {
-        // Personalizar componentes UI globalmente
-        UIManager.put("Button.background", BUTTON_COLOR);
-        UIManager.put("Button.foreground", BUTTON_TEXT_COLOR);
-        UIManager.put("Button.font", new Font("SansSerif", Font.BOLD, 12));
-        UIManager.put("Label.font", new Font("SansSerif", Font.PLAIN, 13));
-        UIManager.put("TextArea.font", new Font("Monospaced", Font.PLAIN, 13));
-        UIManager.put("TextField.font", new Font("SansSerif", Font.PLAIN, 13));
-        UIManager.put("ComboBox.font", new Font("SansSerif", Font.PLAIN, 13));
-    }
-    
-    private void setupHeaderPanel() {
-        headerPanel = new JPanel(new BorderLayout());
+    private JPanel createHeaderPanel() {
+        headerPanel = new JPanel();
         headerPanel.setBackground(HEADER_COLOR);
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        headerPanel.setPreferredSize(new Dimension(900, 50));
+        headerPanel.setLayout(new BorderLayout());
         
         JLabel titleLabel = new JLabel("Gestor de Pokémon");
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        headerPanel.add(titleLabel, BorderLayout.CENTER);
         
-        try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            ImageIcon logoIcon = new ImageIcon(Objects.requireNonNull(classLoader.getResource("pokemon_logo.png")));
-            Image image = logoIcon.getImage().getScaledInstance(200, 74, Image.SCALE_SMOOTH);
-            JLabel logoLabel = new JLabel(new ImageIcon(image));
-            logoLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            headerPanel.add(logoLabel, BorderLayout.CENTER);
-        } catch (Exception e) {
-            // Si no se puede cargar el logo, usar el título de texto
-            headerPanel.add(titleLabel, BorderLayout.CENTER);
-        }
+        return headerPanel;
     }
     
     private JPanel createControlPanel() {
-        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JPanel controlPanel = new JPanel();
         controlPanel.setBackground(BACKGROUND_COLOR);
-        controlPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 1, 0, ACCENT_COLOR),
-            BorderFactory.createEmptyBorder(5, 10, 10, 10)
-        ));
+        controlPanel.setBorder(BorderFactory.createEmptyBorder(15, 10, 10, 10));
+        controlPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 0));
         
         // Selector de tipo de Map
         JLabel mapTypeLabel = new JLabel("Tipo de Map:");
-        mapTypeLabel.setForeground(TEXT_COLOR);
+        mapTypeLabel.setForeground(Color.BLACK);
         
         mapTypeComboBox = new JComboBox<>(new String[]{"HashMap", "TreeMap", "LinkedHashMap"});
         mapTypeComboBox.setPreferredSize(new Dimension(150, 30));
-        mapTypeComboBox.setToolTipText("Selecciona la implementación de Map a utilizar");
         
         // Botón para cargar datos
-        loadDataButton = createStyledButton("Cargar Datos", "Carga los datos de Pokémon desde el archivo CSV");
+        loadDataButton = new JButton("Cargar Datos");
+        loadDataButton.setPreferredSize(new Dimension(120, 30));
+        loadDataButton.setBorder(BorderFactory.createLineBorder(BUTTON_BORDER_COLOR));
         
         // Campo de texto para entrada
         JLabel inputLabel = new JLabel("Nombre/Habilidad:");
-        inputLabel.setForeground(TEXT_COLOR);
+        inputLabel.setForeground(Color.BLACK);
         
         inputTextField = new JTextField(20);
         inputTextField.setPreferredSize(new Dimension(200, 30));
-        inputTextField.setToolTipText("Introduce el nombre del Pokémon o la habilidad a buscar");
         
         // Agregar componentes al panel
         controlPanel.add(mapTypeLabel);
@@ -175,23 +139,40 @@ public class PokemonGUI extends JFrame {
         controlPanel.add(inputLabel);
         controlPanel.add(inputTextField);
         
-        return controlPanel;
+        // Separador horizontal
+        JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
+        separator.setPreferredSize(new Dimension(880, 1));
+        separator.setForeground(Color.LIGHT_GRAY);
+        
+        JPanel separatorPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        separatorPanel.setBackground(BACKGROUND_COLOR);
+        separatorPanel.add(separator);
+        
+        JPanel wrapperPanel = new JPanel(new BorderLayout());
+        wrapperPanel.setBackground(BACKGROUND_COLOR);
+        wrapperPanel.add(controlPanel, BorderLayout.CENTER);
+        wrapperPanel.add(separatorPanel, BorderLayout.SOUTH);
+        
+        return wrapperPanel;
     }
     
     private JPanel createButtonPanel() {
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 5, 10, 10));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 10));
         buttonPanel.setBackground(BACKGROUND_COLOR);
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
-        // Crear botones con estilo
-        addPokemonButton = createStyledButton("Agregar a Colección", "Agrega el Pokémon especificado a tu colección");
-        showPokemonButton = createStyledButton("Mostrar Datos", "Muestra todos los datos del Pokémon especificado");
-        showUserCollectionButton = createStyledButton("Mi Colección", "Muestra tu colección ordenada por tipo");
-        showAllPokemonsButton = createStyledButton("Todos los Pokémon", "Muestra todos los Pokémon ordenados por tipo");
-        findByAbilityButton = createStyledButton("Buscar por Habilidad", "Busca Pokémon con la habilidad especificada");
+        // Crear botones
+        addPokemonButton = createStyledButton("Agregar a Colección");
+        showPokemonButton = createStyledButton("Mostrar Datos");
+        showUserCollectionButton = createStyledButton("Mi Colección");
+        showAllPokemonsButton = createStyledButton("Todos por Tipo");
+        findByAbilityButton = createStyledButton("Buscar por Habilidad");
         
         // Desactivar botones hasta que se carguen los datos
-        toggleButtonsEnabled(false);
+        addPokemonButton.setEnabled(false);
+        showPokemonButton.setEnabled(false);
+        showUserCollectionButton.setEnabled(false);
+        showAllPokemonsButton.setEnabled(false);
+        findByAbilityButton.setEnabled(false);
         
         // Agregar botones al panel
         buttonPanel.add(addPokemonButton);
@@ -203,24 +184,31 @@ public class PokemonGUI extends JFrame {
         return buttonPanel;
     }
     
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setPreferredSize(new Dimension(170, 30));
+        button.setBorder(BorderFactory.createLineBorder(BUTTON_BORDER_COLOR, 1));
+        button.setFocusPainted(false);
+        button.setBackground(Color.WHITE);
+        return button;
+    }
+    
     private JPanel createOutputPanel() {
-        JPanel outputPanel = new JPanel(new BorderLayout());
-        outputPanel.setBorder(BorderFactory.createEmptyBorder(10, 5, 10, 5));
+        JPanel outputPanel = new JPanel(new BorderLayout(0, 5));
         outputPanel.setBackground(BACKGROUND_COLOR);
+        outputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
         JLabel resultLabel = new JLabel("Resultado:");
         resultLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
-        resultLabel.setForeground(TEXT_COLOR);
         
         outputTextArea = new JTextArea();
         outputTextArea.setEditable(false);
         outputTextArea.setFont(new Font("Monospaced", Font.PLAIN, 13));
-        outputTextArea.setBackground(Color.WHITE);
         outputTextArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         
         JScrollPane scrollPane = new JScrollPane(outputTextArea);
-        scrollPane.setPreferredSize(new Dimension(850, 350));
-        scrollPane.setBorder(BorderFactory.createLineBorder(ACCENT_COLOR, 1));
+        scrollPane.setPreferredSize(new Dimension(880, 340));
+        scrollPane.setBorder(BorderFactory.createLineBorder(OUTPUT_BORDER_COLOR, 1));
         
         outputPanel.add(resultLabel, BorderLayout.NORTH);
         outputPanel.add(scrollPane, BorderLayout.CENTER);
@@ -230,61 +218,36 @@ public class PokemonGUI extends JFrame {
     
     private JPanel createStatusPanel() {
         JPanel statusPanel = new JPanel(new BorderLayout());
+        statusPanel.setBackground(Color.LIGHT_GRAY);
         statusPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        statusPanel.setBackground(new Color(230, 230, 230));
         
+        // Etiqueta de estado a la izquierda
         statusLabel = new JLabel("Listo para comenzar. Selecciona un tipo de Map y carga los datos.");
         statusLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
         
+        // Botón para mostrar todos los Pokémon disponibles a la derecha
+        showAllAvailablePokemonsButton = new JButton("Mostrar todos los Pokémon disponibles");
+        showAllAvailablePokemonsButton.setEnabled(false);
+        
+        // Panel para contener el botón y mantenerlo alineado a la derecha
+        JPanel buttonContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonContainer.setBackground(Color.LIGHT_GRAY);
+        buttonContainer.add(showAllAvailablePokemonsButton);
+        
         statusPanel.add(statusLabel, BorderLayout.WEST);
+        statusPanel.add(buttonContainer, BorderLayout.EAST);
         
         return statusPanel;
     }
     
-    private JButton createStyledButton(String text, String tooltip) {
-        JButton button = new JButton(text);
-        button.setBackground(BUTTON_COLOR);
-        button.setForeground(BUTTON_TEXT_COLOR);
-        button.setFont(new Font("SansSerif", Font.BOLD, 12));
-        button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BUTTON_COLOR.darker(), 1),
-            BorderFactory.createEmptyBorder(8, 15, 8, 15)
-        ));
-        button.setToolTipText(tooltip);
-        
-        // Efectos al pasar el ratón
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                button.setBackground(BUTTON_COLOR.brighter());
-            }
-            
-            @Override
-            public void mouseExited(MouseEvent e) {
-                button.setBackground(BUTTON_COLOR);
-            }
-            
-            @Override
-            public void mousePressed(MouseEvent e) {
-                button.setBackground(BUTTON_COLOR.darker());
-            }
-            
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                button.setBackground(BUTTON_COLOR);
-            }
-        });
-        
-        return button;
-    }
-    
     private void toggleButtonsEnabled(boolean enabled) {
-        addPokemonButton.setEnabled(enabled);
-        showPokemonButton.setEnabled(enabled);
-        showUserCollectionButton.setEnabled(enabled);
-        showAllPokemonsButton.setEnabled(enabled);
-        findByAbilityButton.setEnabled(enabled);
+        // Asegurarnos de que todos los botones estén inicializados antes de cambiar su estado
+        if (addPokemonButton != null) addPokemonButton.setEnabled(enabled);
+        if (showPokemonButton != null) showPokemonButton.setEnabled(enabled);
+        if (showUserCollectionButton != null) showUserCollectionButton.setEnabled(enabled);
+        if (showAllPokemonsButton != null) showAllPokemonsButton.setEnabled(enabled);
+        if (findByAbilityButton != null) findByAbilityButton.setEnabled(enabled);
+        if (showAllAvailablePokemonsButton != null) showAllAvailablePokemonsButton.setEnabled(enabled);
     }
     
     private void setupEventHandlers() {
@@ -294,7 +257,6 @@ public class PokemonGUI extends JFrame {
             MapType mapType = MapType.fromValue(selectedIndex + 1);
             
             outputTextArea.setText("Cargando datos con " + mapType.getName() + "...\n");
-            statusLabel.setText("Cargando datos...");
             
             // Ejecutar en un hilo separado para no bloquear la UI
             SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
@@ -315,7 +277,15 @@ public class PokemonGUI extends JFrame {
                         outputTextArea.append("Datos cargados correctamente. " + 
                                              pokemonData.size() + " Pokémon disponibles.\n");
                         statusLabel.setText("Datos cargados: " + pokemonData.size() + " Pokémon disponibles");
-                        toggleButtonsEnabled(true);
+                        
+                        // Habilitar botones individualmente en lugar de usar toggleButtonsEnabled
+                        addPokemonButton.setEnabled(true);
+                        showPokemonButton.setEnabled(true);
+                        showUserCollectionButton.setEnabled(true);
+                        showAllPokemonsButton.setEnabled(true);
+                        findByAbilityButton.setEnabled(true);
+                        showAllAvailablePokemonsButton.setEnabled(true);
+                        
                         mapTypeComboBox.setEnabled(false);
                         loadDataButton.setEnabled(false);
                     } catch (Exception ex) {
@@ -373,7 +343,7 @@ public class PokemonGUI extends JFrame {
                 outputTextArea.append("Pokémon '" + pokemonName + "' agregado a tu colección.\n");
                 statusLabel.setText("Pokémon agregado a tu colección");
                 
-                // Mostrar un mensaje de éxito con una imagen del tipo del Pokémon si está disponible
+                // Mostrar un mensaje de éxito
                 JOptionPane.showMessageDialog(this, 
                     "¡" + pokemonName + " ha sido agregado a tu colección!", 
                     "Pokémon capturado", JOptionPane.INFORMATION_MESSAGE);
@@ -398,23 +368,19 @@ public class PokemonGUI extends JFrame {
                 return;
             }
             
-            // Mostrar los datos con formato mejorado
+            // Mostrar los datos del Pokémon
             StringBuilder sb = new StringBuilder();
-            sb.append("┌─────────────────────────────────────────────┐\n");
-            sb.append("│             DATOS DE POKÉMON                │\n");
-            sb.append("├─────────────────────────────────────────────┤\n");
-            sb.append(String.format("│ Nombre: %-35s │\n", pokemon.getName()));
-            sb.append(String.format("│ Número Pokédex: %-28d │\n", pokemon.getPokedexNumber()));
-            sb.append(String.format("│ Tipo Primario: %-30s │\n", pokemon.getType1()));
+            sb.append("Nombre: ").append(pokemon.getName()).append("\n");
+            sb.append("Número Pokédex: ").append(pokemon.getPokedexNumber()).append("\n");
+            sb.append("Tipo Primario: ").append(pokemon.getType1()).append("\n");
             String type2 = pokemon.getType2() == null || pokemon.getType2().isEmpty() ? "N/A" : pokemon.getType2();
-            sb.append(String.format("│ Tipo Secundario: %-28s │\n", type2));
-            sb.append(String.format("│ Clasificación: %-30s │\n", pokemon.getClassification()));
-            sb.append(String.format("│ Altura (m): %-32.1f │\n", pokemon.getHeight()));
-            sb.append(String.format("│ Peso (kg): %-33.1f │\n", pokemon.getWeight()));
-            sb.append(String.format("│ Habilidades: %-31s │\n", pokemon.getAbilities()));
-            sb.append(String.format("│ Generación: %-32d │\n", pokemon.getGeneration()));
-            sb.append(String.format("│ Estado Legendario: %-26s │\n", pokemon.getLegendaryStatus()));
-            sb.append("└─────────────────────────────────────────────┘\n");
+            sb.append("Tipo Secundario: ").append(type2).append("\n");
+            sb.append("Clasificación: ").append(pokemon.getClassification()).append("\n");
+            sb.append("Altura (m): ").append(pokemon.getHeight()).append("\n");
+            sb.append("Peso (kg): ").append(pokemon.getWeight()).append("\n");
+            sb.append("Habilidades: ").append(pokemon.getAbilities()).append("\n");
+            sb.append("Generación: ").append(pokemon.getGeneration()).append("\n");
+            sb.append("Estado Legendario: ").append(pokemon.getLegendaryStatus()).append("\n");
             
             outputTextArea.setText(sb.toString());
             statusLabel.setText("Mostrando datos de " + pokemonName);
@@ -431,28 +397,19 @@ public class PokemonGUI extends JFrame {
             }
             
             StringBuilder sb = new StringBuilder();
-            sb.append("┌─────────────────────────────────────────────┐\n");
-            sb.append("│        TU COLECCIÓN POR TIPO PRIMARIO       │\n");
-            sb.append("├─────────────────────────────────────────────┤\n");
-            sb.append("│ Nombre                 │ Tipo Primario      │\n");
-            sb.append("├────────────────────────┼────────────────────┤\n");
+            sb.append("Tu colección ordenada por tipo primario:\n\n");
             
             String currentType = "";
             
             for (Pokemon pokemon : userPokemons) {
-                // Si cambia el tipo, agregar un separador
+                // Si cambia el tipo, mostrar el nuevo tipo como encabezado
                 if (!currentType.equals(pokemon.getType1())) {
                     currentType = pokemon.getType1();
-                    if (!pokemon.equals(userPokemons.get(0))) {
-                        sb.append("├────────────────────────┼────────────────────┤\n");
-                    }
+                    sb.append("\n").append(currentType).append(":\n");
                 }
                 
-                sb.append(String.format("│ %-22s │ %-18s │\n", 
-                          pokemon.getName(), pokemon.getType1()));
+                sb.append("- ").append(pokemon.getName()).append("\n");
             }
-            
-            sb.append("└────────────────────────┴────────────────────┘\n");
             
             outputTextArea.setText(sb.toString());
             statusLabel.setText("Mostrando tu colección de " + userPokemons.size() + " Pokémon");
@@ -463,30 +420,19 @@ public class PokemonGUI extends JFrame {
             List<Pokemon> allPokemons = pokemonData.getAllPokemonsSortedByType1();
             
             StringBuilder sb = new StringBuilder();
-            sb.append("┌─────────────────────────────────────────────┐\n");
-            sb.append("│        TODOS LOS POKÉMON POR TIPO           │\n");
-            sb.append("├─────────────────────────────────────────────┤\n");
-            sb.append("│ Nombre                 │ Tipo Primario      │\n");
-            sb.append("├────────────────────────┼────────────────────┤\n");
+            sb.append("Todos los Pokémon ordenados por tipo primario:\n\n");
             
             String currentType = "";
-            int count = 0;
             
             for (Pokemon pokemon : allPokemons) {
-                // Si cambia el tipo, agregar un encabezado para el nuevo tipo
+                // Si cambia el tipo, mostrar el nuevo tipo como encabezado
                 if (!currentType.equals(pokemon.getType1())) {
                     currentType = pokemon.getType1();
-                    if (count > 0) {
-                        sb.append("├────────────────────────┼────────────────────┤\n");
-                    }
+                    sb.append("\n").append(currentType).append(":\n");
                 }
                 
-                sb.append(String.format("│ %-22s │ %-18s │\n", 
-                          pokemon.getName(), pokemon.getType1()));
-                count++;
+                sb.append("- ").append(pokemon.getName()).append("\n");
             }
-            
-            sb.append("└────────────────────────┴────────────────────┘\n");
             
             outputTextArea.setText(sb.toString());
             statusLabel.setText("Mostrando " + allPokemons.size() + " Pokémon ordenados por tipo");
@@ -511,22 +457,39 @@ public class PokemonGUI extends JFrame {
             }
             
             StringBuilder sb = new StringBuilder();
-            sb.append("┌─────────────────────────────────────────────┐\n");
-            sb.append(String.format("│ POKÉMON CON LA HABILIDAD: %-19s │\n", ability.toUpperCase()));
-            sb.append("├─────────────────────────────────────────────┤\n");
-            sb.append("│ Nombre                 │ Tipo Primario      │\n");
-            sb.append("├────────────────────────┼────────────────────┤\n");
+            sb.append("Pokémon con la habilidad '").append(ability).append("':\n\n");
             
             for (Pokemon pokemon : matchingPokemons) {
-                sb.append(String.format("│ %-22s │ %-18s │\n", 
-                          pokemon.getName(), pokemon.getType1()));
+                sb.append("- ").append(pokemon.getName()).append("\n");
             }
-            
-            sb.append("└────────────────────────┴────────────────────┘\n");
             
             outputTextArea.setText(sb.toString());
             statusLabel.setText("Se encontraron " + matchingPokemons.size() + " Pokémon con la habilidad '" + ability + "'");
         });
+        
+        // Configurar el botón para mostrar todos los Pokémon disponibles
+        if (showAllAvailablePokemonsButton != null) {
+            showAllAvailablePokemonsButton.addActionListener(e -> {
+                if (pokemonData == null || pokemonData.size() == 0) {
+                    outputTextArea.setText("No hay datos de Pokémon cargados.\n");
+                    return;
+                }
+                
+                StringBuilder sb = new StringBuilder();
+                sb.append("Listado completo de todos los Pokémon disponibles:\n\n");
+                
+                // Obtener todos los Pokémon (no ordenados, en el orden del Map)
+                int count = 0;
+                for (Pokemon pokemon : pokemonData.getAllPokemons()) {
+                    count++;
+                    sb.append(String.format("%3d. %-15s - Tipo: %-10s - Pokédex: #%d\n", 
+                              count, pokemon.getName(), pokemon.getType1(), pokemon.getPokedexNumber()));
+                }
+                
+                outputTextArea.setText(sb.toString());
+                statusLabel.setText("Mostrando lista completa de " + pokemonData.size() + " Pokémon");
+            });
+        }
         
         // Acción al presionar Enter en el campo de texto
         inputTextField.addKeyListener(new KeyAdapter() {
@@ -542,7 +505,7 @@ public class PokemonGUI extends JFrame {
         });
     }
     
-    // Método para cargar los datos automáticamente desde la ruta por defecto
+    // Método para cargar los datos automáticamente
     private void loadPokemonDataAutomatically(MapType mapType) throws IOException {
         pokemonData = new PokemonData(mapType);
         
@@ -614,31 +577,22 @@ public class PokemonGUI extends JFrame {
         outputTextArea.append("Datos cargados correctamente desde " + filePath + ". " + 
                              pokemonData.size() + " Pokémon disponibles.\n");
         statusLabel.setText("Datos cargados: " + pokemonData.size() + " Pokémon disponibles");
-        toggleButtonsEnabled(true);
+        
+        // Habilitar botones individualmente en lugar de usar toggleButtonsEnabled
+        addPokemonButton.setEnabled(true);
+        showPokemonButton.setEnabled(true);
+        showUserCollectionButton.setEnabled(true);
+        showAllPokemonsButton.setEnabled(true);
+        findByAbilityButton.setEnabled(true);
+        showAllAvailablePokemonsButton.setEnabled(true);
+        
         mapTypeComboBox.setEnabled(false);
         loadDataButton.setEnabled(false);
     }
     
     public static void main(String[] args) {
-        // Establecer aspecto visual antes de crear la ventana
-        try {
-            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception ex) {
-                System.err.println("Error al establecer Look and Feel: " + ex.getMessage());
-            }
-        }
-        
         SwingUtilities.invokeLater(() -> {
-            PokemonGUI gui = new PokemonGUI();
-            gui.setVisible(true);
+            new PokemonGUI().setVisible(true);
         });
     }
 }
