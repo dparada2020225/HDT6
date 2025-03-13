@@ -12,7 +12,6 @@
 package pokemonmap.gui;
 
 import javax.swing.*;
-import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -291,20 +290,7 @@ public class PokemonGUI extends JFrame {
         return statusPanel;
     }
     
-    /**
-     * Habilita o deshabilita todos los botones de acción según el parámetro.
-     * 
-     * @param enabled true para habilitar los botones, false para deshabilitarlos
-     */
-    private void toggleButtonsEnabled(boolean enabled) {
-        // Asegurarnos de que todos los botones estén inicializados antes de cambiar su estado
-        if (addPokemonButton != null) addPokemonButton.setEnabled(enabled);
-        if (showPokemonButton != null) showPokemonButton.setEnabled(enabled);
-        if (showUserCollectionButton != null) showUserCollectionButton.setEnabled(enabled);
-        if (showAllPokemonsButton != null) showAllPokemonsButton.setEnabled(enabled);
-        if (findByAbilityButton != null) findByAbilityButton.setEnabled(enabled);
-        if (showAllAvailablePokemonsButton != null) showAllAvailablePokemonsButton.setEnabled(enabled);
-    }
+    
     
     /**
      * Configura los manejadores de eventos para todos los componentes interactivos.
