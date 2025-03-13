@@ -1,3 +1,14 @@
+/**
+ * Universidad del Valle de Guatemala
+ * Departamento de Ciencia de la Computación
+ * Programación Orientada a Objetos
+ * 
+ * Autor: Denil José Parada Cabrera - 24761
+ * Fecha: 12/03/2025
+ * Descripción: Interfaz gráfica de usuario para la aplicación de gestión de Pokémon.
+ *              Permite seleccionar el tipo de Map, cargar datos desde un archivo CSV
+ *              y realizar las operaciones requeridas sobre la colección de Pokémon.
+ */
 package pokemonmap.gui;
 
 import javax.swing.*;
@@ -14,6 +25,11 @@ import pokemonmap.data.PokemonData;
 import pokemonmap.factory.MapType;
 import pokemonmap.util.CSVReader;
 
+/**
+ * Interfaz gráfica de usuario para la aplicación de gestión de Pokémon.
+ * Proporciona una interfaz amigable para interactuar con la colección de Pokémon,
+ * permitiendo cargar datos, buscar información y gestionar una colección personal.
+ */
 public class PokemonGUI extends JFrame {
     // Constantes para colores
     private static final Color HEADER_COLOR = new Color(43, 87, 151); // Azul más oscuro para el header
@@ -33,13 +49,17 @@ public class PokemonGUI extends JFrame {
     private JButton showUserCollectionButton;
     private JButton showAllPokemonsButton;
     private JButton findByAbilityButton;
-    private JButton showAllAvailablePokemonsButton; // Nuevo botón para mostrar todos los disponibles
+    private JButton showAllAvailablePokemonsButton; // Botón para mostrar todos los disponibles
     private JLabel statusLabel;
     private JPanel headerPanel;
     
     // Ruta por defecto al archivo CSV
     private static final String DEFAULT_CSV_PATH = "src/main/resources/pokemon_data_pokeapi.csv";
 
+    /**
+     * Constructor para la interfaz gráfica. Inicializa todos los componentes
+     * y configura el layout de la ventana principal.
+     */
     public PokemonGUI() {
         // Configuración básica de la ventana
         setTitle("Gestor de Pokémon");
@@ -92,6 +112,11 @@ public class PokemonGUI extends JFrame {
         setupEventHandlers();
     }
     
+    /**
+     * Crea el panel de cabecera con el título de la aplicación.
+     * 
+     * @return Panel de cabecera configurado
+     */
     private JPanel createHeaderPanel() {
         headerPanel = new JPanel();
         headerPanel.setBackground(HEADER_COLOR);
@@ -107,6 +132,11 @@ public class PokemonGUI extends JFrame {
         return headerPanel;
     }
     
+    /**
+     * Crea el panel de control con selector de Map, botón de carga y campo de texto.
+     * 
+     * @return Panel de control configurado
+     */
     private JPanel createControlPanel() {
         JPanel controlPanel = new JPanel();
         controlPanel.setBackground(BACKGROUND_COLOR);
@@ -156,6 +186,11 @@ public class PokemonGUI extends JFrame {
         return wrapperPanel;
     }
     
+    /**
+     * Crea el panel de botones con las acciones principales.
+     * 
+     * @return Panel de botones configurado
+     */
     private JPanel createButtonPanel() {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 10));
         buttonPanel.setBackground(BACKGROUND_COLOR);
@@ -184,6 +219,12 @@ public class PokemonGUI extends JFrame {
         return buttonPanel;
     }
     
+    /**
+     * Crea un botón estilizado con el texto especificado.
+     * 
+     * @param text Texto a mostrar en el botón
+     * @return Botón estilizado
+     */
     private JButton createStyledButton(String text) {
         JButton button = new JButton(text);
         button.setPreferredSize(new Dimension(170, 30));
@@ -193,6 +234,11 @@ public class PokemonGUI extends JFrame {
         return button;
     }
     
+    /**
+     * Crea el panel de salida con área de texto para mostrar resultados.
+     * 
+     * @return Panel de salida configurado
+     */
     private JPanel createOutputPanel() {
         JPanel outputPanel = new JPanel(new BorderLayout(0, 5));
         outputPanel.setBackground(BACKGROUND_COLOR);
@@ -216,6 +262,11 @@ public class PokemonGUI extends JFrame {
         return outputPanel;
     }
     
+    /**
+     * Crea el panel de estado (pie de página) con información y botón adicional.
+     * 
+     * @return Panel de estado configurado
+     */
     private JPanel createStatusPanel() {
         JPanel statusPanel = new JPanel(new BorderLayout());
         statusPanel.setBackground(Color.LIGHT_GRAY);
@@ -240,6 +291,11 @@ public class PokemonGUI extends JFrame {
         return statusPanel;
     }
     
+    /**
+     * Habilita o deshabilita todos los botones de acción según el parámetro.
+     * 
+     * @param enabled true para habilitar los botones, false para deshabilitarlos
+     */
     private void toggleButtonsEnabled(boolean enabled) {
         // Asegurarnos de que todos los botones estén inicializados antes de cambiar su estado
         if (addPokemonButton != null) addPokemonButton.setEnabled(enabled);
@@ -250,6 +306,9 @@ public class PokemonGUI extends JFrame {
         if (showAllAvailablePokemonsButton != null) showAllAvailablePokemonsButton.setEnabled(enabled);
     }
     
+    /**
+     * Configura los manejadores de eventos para todos los componentes interactivos.
+     */
     private void setupEventHandlers() {
         // Cargar datos
         loadDataButton.addActionListener(e -> {
@@ -505,7 +564,12 @@ public class PokemonGUI extends JFrame {
         });
     }
     
-    // Método para cargar los datos automáticamente
+    /**
+     * Carga automáticamente los datos de Pokémon desde varias ubicaciones posibles.
+     * 
+     * @param mapType El tipo de Map a utilizar
+     * @throws IOException si no se puede cargar el archivo CSV
+     */
     private void loadPokemonDataAutomatically(MapType mapType) throws IOException {
         pokemonData = new PokemonData(mapType);
         
@@ -537,7 +601,13 @@ public class PokemonGUI extends JFrame {
         }
     }
     
-    // Método para buscar recursivamente un archivo CSV
+    /**
+     * Busca recursivamente un archivo CSV en un directorio y sus subdirectorios.
+     * 
+     * @param dir Directorio donde buscar
+     * @param fileName Nombre del archivo a buscar
+     * @return El archivo encontrado o null si no se encuentra
+     */
     private File findCsvFile(File dir, String fileName) {
         if (dir == null || !dir.isDirectory()) return null;
         
@@ -556,7 +626,12 @@ public class PokemonGUI extends JFrame {
         return null;
     }
     
-    // Método para cargar los datos manualmente a través de un selector de archivos
+    /**
+     * Carga manualmente los datos de Pokémon a través de un selector de archivos.
+     * 
+     * @param mapType El tipo de Map a utilizar
+     * @throws IOException si no se puede cargar el archivo CSV
+     */
     private void loadPokemonDataManually(MapType mapType) throws IOException {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Seleccionar archivo CSV de Pokémon");
@@ -590,6 +665,11 @@ public class PokemonGUI extends JFrame {
         loadDataButton.setEnabled(false);
     }
     
+    /**
+     * Método principal para iniciar la aplicación.
+     * 
+     * @param args Argumentos de línea de comandos (no utilizados)
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             new PokemonGUI().setVisible(true);

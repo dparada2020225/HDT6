@@ -1,3 +1,13 @@
+/**
+ * Universidad del Valle de Guatemala
+ * Departamento de Ciencia de la Computación
+ * Programación Orientada a Objetos
+ * 
+ * Autor: Denil José Parada Cabrera - 24761
+ * Fecha: 12/03/2025
+ * Descripción: Clase utilitaria para leer archivos CSV que contienen información de Pokémon.
+ *              Proporciona métodos para cargar datos desde archivos o recursos del classpath.
+ */
 package pokemonmap.util;
 
 import java.io.BufferedReader;
@@ -13,7 +23,20 @@ import java.util.HashMap;
 import pokemonmap.data.Pokemon;
 import pokemonmap.data.PokemonData;
 
+/**
+ * Clase utilitaria para leer y procesar archivos CSV que contienen información de Pokémon.
+ * Ofrece métodos para cargar datos desde archivos en el sistema o recursos del classpath.
+ */
 public class CSVReader {
+    
+    /**
+     * Lee Pokémon desde un archivo CSV en el sistema de archivos.
+     * 
+     * @param filePath Ruta al archivo CSV
+     * @param pokemonData Objeto PokemonData donde se cargarán los datos
+     * @return El objeto PokemonData con los datos cargados
+     * @throws IOException si ocurre un error al leer el archivo
+     */
     public static PokemonData readPokemonsFromCSV(String filePath, PokemonData pokemonData) throws IOException {
         Path path = Paths.get(filePath);
         
@@ -22,7 +45,15 @@ public class CSVReader {
         }
     }
     
-    // Método para cargar desde recursos (classpath)
+    /**
+     * Lee Pokémon desde un recurso en el classpath.
+     * Si no encuentra el recurso, intenta buscarlo como un archivo en el sistema.
+     * 
+     * @param resourcePath Ruta al recurso
+     * @param pokemonData Objeto PokemonData donde se cargarán los datos
+     * @return El objeto PokemonData con los datos cargados
+     * @throws IOException si ocurre un error al leer el recurso o archivo
+     */
     public static PokemonData readPokemonsFromResource(String resourcePath, PokemonData pokemonData) throws IOException {
         // Intentar cargar el recurso desde el classpath
         InputStream is = CSVReader.class.getClassLoader().getResourceAsStream(resourcePath);
@@ -42,6 +73,14 @@ public class CSVReader {
         }
     }
     
+    /**
+     * Procesa un archivo CSV y carga los datos en el objeto PokemonData.
+     * 
+     * @param br BufferedReader con el contenido del CSV
+     * @param pokemonData Objeto PokemonData donde se cargarán los datos
+     * @return El objeto PokemonData con los datos cargados
+     * @throws IOException si ocurre un error al leer el archivo
+     */
     private static PokemonData processCSV(BufferedReader br, PokemonData pokemonData) throws IOException {
         String line = br.readLine(); // Leer encabezados
         
@@ -75,6 +114,13 @@ public class CSVReader {
         return pokemonData;
     }
     
+    /**
+     * Parsea una línea de texto CSV en un array de valores.
+     * Maneja correctamente campos entrecomillados y comas dentro de los campos.
+     * 
+     * @param line Línea de texto CSV a parsear
+     * @return Array con los valores extraídos de la línea
+     */
     private static String[] parseCsvLine(String line) {
         // Implementación simple de parser CSV
         // Considera usar una biblioteca como OpenCSV para un código de producción

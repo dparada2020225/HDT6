@@ -1,19 +1,39 @@
+/**
+ * Universidad del Valle de Guatemala
+ * Departamento de Ciencia de la Computación
+ * Programación Orientada a Objetos
+ * 
+ * Autor: Denil José Parada Cabrera - 24761
+ * Fecha: 12/03/2025
+ * Descripción: Clase de prueba para PokemonCollection.
+ *              Verifica la funcionalidad de la colección de Pokémon del usuario
+ *              mediante pruebas unitarias con JUnit.
+ */
 package test.java.pokemonmap.data;
-import pokemonmap.data.PokemonData;
-import pokemonmap.data.PokemonCollection;
-import pokemonmap.data.Pokemon;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import pokemonmap.factory.MapType;
+import pokemonmap.data.Pokemon;
+import pokemonmap.data.PokemonCollection;
+import pokemonmap.data.PokemonData;
 import java.util.List;
 
+/**
+ * Pruebas unitarias para la clase PokemonCollection.
+ * Verifica el correcto funcionamiento de los métodos de la colección
+ * de Pokémon del usuario.
+ */
 public class PokemonCollectionTest {
     private PokemonData pokemonData;
     private PokemonCollection userCollection;
 
+    /**
+     * Configuración inicial antes de cada prueba.
+     * Crea datos de prueba con tres Pokémon diferentes.
+     */
     @BeforeEach
     public void setUp() {
         // Configurar los datos para las pruebas
@@ -36,21 +56,33 @@ public class PokemonCollectionTest {
         userCollection = new PokemonCollection(pokemonData);
     }
     
+    /**
+     * Prueba la funcionalidad de agregar Pokémon a la colección del usuario.
+     * Verifica que:
+     * - Se pueden agregar Pokémon que existen en la colección principal
+     * - No se pueden agregar Pokémon duplicados
+     * - No se pueden agregar Pokémon que no existen en la colección principal
+     */
     @Test
     public void testAddPokemon() {
         // Verificar que podemos agregar un Pokémon existente
-        assertTrue(userCollection.addPokemon("Pikachu"));
-        assertEquals(1, userCollection.size());
+        assertTrue(userCollection.addPokemon("Pikachu"), "Debería poder agregar un Pokémon existente");
+        assertEquals(1, userCollection.size(), "La colección debería tener 1 Pokémon");
         
         // Verificar que no podemos agregar un Pokémon que ya tenemos
-        assertFalse(userCollection.addPokemon("Pikachu"));
-        assertEquals(1, userCollection.size());
+        assertFalse(userCollection.addPokemon("Pikachu"), "No debería poder agregar un Pokémon duplicado");
+        assertEquals(1, userCollection.size(), "La colección debería seguir teniendo 1 Pokémon");
         
         // Verificar que no podemos agregar un Pokémon que no existe
-        assertFalse(userCollection.addPokemon("MissingNo"));
-        assertEquals(1, userCollection.size());
+        assertFalse(userCollection.addPokemon("MissingNo"), "No debería poder agregar un Pokémon inexistente");
+        assertEquals(1, userCollection.size(), "La colección debería seguir teniendo 1 Pokémon");
     }
     
+    /**
+     * Prueba la funcionalidad de ordenar los Pokémon por tipo primario.
+     * Verifica que los Pokémon se ordenen correctamente por orden alfabético
+     * de su tipo primario.
+     */
     @Test
     public void testGetUserPokemonsSortedByType1() {
         // Agregar algunos Pokémon
@@ -62,9 +94,28 @@ public class PokemonCollectionTest {
         List<Pokemon> sortedPokemons = userCollection.getUserPokemonsSortedByType1();
         
         // Verificar el orden: Electric, Fire, Grass (orden alfabético)
-        assertEquals(3, sortedPokemons.size());
-        assertEquals("Electric", sortedPokemons.get(0).getType1());
-        assertEquals("Fire", sortedPokemons.get(1).getType1());
-        assertEquals("Grass", sortedPokemons.get(2).getType1());
+        assertEquals(3, sortedPokemons.size(), "La colección debería tener 3 Pokémon");
+        assertEquals("Electric", sortedPokemons.get(0).getType1(), "El primer Pokémon debería ser de tipo Electric");
+        assertEquals("Fire", sortedPokemons.get(1).getType1(), "El segundo Pokémon debería ser de tipo Fire");
+        assertEquals("Grass", sortedPokemons.get(2).getType1(), "El tercer Pokémon debería ser de tipo Grass");
+    }
+    
+    /**
+     * Prueba la funcionalidad de verificar si un Pokémon está en la colección.
+     * Verifica que el método containsPokemon funcione correctamente.
+     */
+    @Test
+    public void testContainsPokemon() {
+        // Agregar un Pokémon a la colección
+        userCollection.addPokemon("Pikachu");
+        
+        // Verificar que el Pokémon está en la colección
+        assertTrue(userCollection.containsPokemon("Pikachu"), "Debería encontrar el Pokémon en la colección");
+        
+        // Verificar que otro Pokémon no está en la colección
+        assertFalse(userCollection.containsPokemon("Charizard"), "No debería encontrar un Pokémon que no fue agregado");
+        
+        // Verificar con un Pokémon inexistente
+        assertFalse(userCollection.containsPokemon("MissingNo"), "No debería encontrar un Pokémon inexistente");
     }
 }
