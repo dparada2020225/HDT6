@@ -173,7 +173,7 @@ Esto mejora la experiencia de usuario evitando que tenga que seleccionar manualm
 
 ## Autor
 
-[Tu Nombre] - [Tu Carnet]
+Denil José Parada Cabrera - 24761
 Universidad del Valle de Guatemala
 Semestre I - 2025
 CC2016 – Algoritmos y Estructura de Datos
