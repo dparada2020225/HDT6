@@ -1,3 +1,7 @@
+# Archivos específicos de la hoja de trabajo 6
+HDT6.docx
+HDT6.pdf
+
 # Java specific
 *.class
 *.jar
@@ -18,3 +22,7 @@ nbproject/
 out/
 bin/
 build/
+
+# OS specific
+.DS_Store
+Thumbs.db
